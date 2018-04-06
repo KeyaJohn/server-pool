@@ -1,0 +1,61 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BIN	Makefile	/^BIN=.\/test$/;"	m
+BUFF_SIZE	cgi_conn.h	/^    static const int BUFF_SIZE  = 1024;$/;"	m	class:cgi_conn
+CC	Makefile	/^CC=g++$/;"	m
+CFLAG	Makefile	/^CFLAG= -g $/;"	m
+DIR	Makefile	/^DIR=.$/;"	m
+LFLAG	Makefile	/^LFLAG=  -std=c++11$/;"	m
+LINK_NUM	main.cpp	19;"	d	file:
+MAX_DEAL_NUMBER	processpool.h	/^    static const int MAX_DEAL_NUMBER  = 65535;$/;"	m	class:processpool
+MAX_PROCESS_NUMBER	processpool.h	/^    static const int MAX_PROCESS_NUMBER = 16;$/;"	m	class:processpool
+OBJ	Makefile	/^OBJ=$(patsubst %.cpp,%.o,$(SRC))$/;"	m
+SERV_IP	main.cpp	18;"	d	file:
+SERV_PORT	main.cpp	17;"	d	file:
+SRC	Makefile	/^SRC=$(wildcard $(DIR)\/*.cpp)$/;"	m
+_CGI_CONN_H	cgi_conn.h	9;"	d
+_COMM_H	comm.h	9;"	d
+_PRECESSPOOL_H	processpool.h	9;"	d
+addfd	comm.h	/^static void addfd(int epollfd,int fd)$/;"	f
+addsig	comm.h	/^static void addsig(int sig,void(handler)(int),bool restart = true)$/;"	f
+buff	cgi_conn.h	/^    char buff[BUFF_SIZE];$/;"	m	class:cgi_conn
+cgi_conn	cgi_conn.h	/^    cgi_conn(){}$/;"	f	class:cgi_conn
+cgi_conn	cgi_conn.h	/^class cgi_conn$/;"	c
+client_addr	cgi_conn.h	/^    struct sockaddr_in client_addr;$/;"	m	class:cgi_conn	typeref:struct:cgi_conn::sockaddr_in
+create	processpool.cpp	/^processpool<T>* processpool<T>::create(int listenfd,int process_number)$/;"	f	class:processpool
+epollfd	cgi_conn.h	/^    static int epollfd;$/;"	m	class:cgi_conn
+epollfd	cgi_conn.h	/^int cgi_conn::epollfd = -1;$/;"	m	class:cgi_conn
+epollfd	processpool.h	/^    int epollfd;$/;"	m	class:processpool
+index	processpool.h	/^    int index ;$/;"	m	class:processpool
+init	cgi_conn.h	/^    void init(int _epollfd,int _sockfd,struct sockaddr_in & _client_addr)$/;"	f	class:cgi_conn
+m_pid	processpool.h	/^    pid_t m_pid;$/;"	m	class:process
+m_pipefd	processpool.h	/^    int m_pipefd[2];$/;"	m	class:process
+m_process_number	processpool.h	/^    int m_process_number ;$/;"	m	class:processpool
+m_stop	processpool.h	/^    bool m_stop;$/;"	m	class:processpool
+m_sub_process	processpool.h	/^    process *m_sub_process;$/;"	m	class:processpool
+main	cgi/sougou.cpp	/^int main()$/;"	f
+main	main.cpp	/^int main()$/;"	f
+myprocesspool	processpool.h	/^    static processpool<T> * myprocesspool;$/;"	m	class:processpool
+myprocesspool	processpool.h	/^processpool<T> * processpool<T>::myprocesspool = NULL;$/;"	m	class:processpool
+process	cgi_conn.h	/^void cgi_conn::process()$/;"	f	class:cgi_conn
+process	processpool.h	/^    process():m_pid(-1){}$/;"	f	class:process
+process	processpool.h	/^class process$/;"	c
+processpool	processpool.cpp	/^processpool<T>::processpool(int listenfd,int process_number):$/;"	f	class:processpool
+processpool	processpool.h	/^class processpool$/;"	c
+read_index	cgi_conn.h	/^    int read_index;$/;"	m	class:cgi_conn
+removefd	comm.h	/^static void removefd(int epollfd,int fd)$/;"	f
+run	processpool.cpp	/^void processpool<T>::run()$/;"	f	class:processpool
+run_child	processpool.cpp	/^void processpool<T>::run_child()$/;"	f	class:processpool
+run_parent	processpool.cpp	/^void processpool<T>::run_parent()$/;"	f	class:processpool
+setnoblocking	comm.h	/^static int setnoblocking(int fd)$/;"	f
+setup_sig_pipe	processpool.cpp	/^void processpool<T>::setup_sig_pipe()$/;"	f	class:processpool
+sig_handler	comm.h	/^static void sig_handler(int sig)$/;"	f
+sig_pipefd	processpool.h	/^static int sig_pipefd[2];$/;"	v
+sockfd	cgi_conn.h	/^    int sockfd;$/;"	m	class:cgi_conn
+sockfd	processpool.h	/^    int sockfd;$/;"	m	class:processpool
+~cgi_conn	cgi_conn.h	/^    ~cgi_conn(){}$/;"	f	class:cgi_conn
+~processpool	processpool.cpp	/^processpool<T>::~processpool()$/;"	f	class:processpool
