@@ -2,8 +2,8 @@ DIR=.
 SRC=$(wildcard $(DIR)/*.cpp)
 OBJ=$(patsubst %.cpp,%.o,$(SRC))
 CFLAG= -g 
-LFLAG=  -std=c++11
-BIN=./test
+LFLAG= -pthread  -std=c++11
+BIN=./server
 CC=g++
 
 all:$(BIN)
