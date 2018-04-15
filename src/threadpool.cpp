@@ -19,7 +19,8 @@ threadpool<T>::threadpool(int _cur_pthread_num):
 {     
     if( cur_pthread_num <= 0 || cur_pthread_num > MAX_PTHREAD_NUM ) 
     {
-        throw std::exception();
+        //throw std::exception();
+        cout<<"线程数值不对!\n";
     }
 
     pth_arr = new pthread_t[cur_pthread_num];
@@ -27,19 +28,19 @@ threadpool<T>::threadpool(int _cur_pthread_num):
     {
         throw std::exception();
     }
+
     for(int i=0; i<cur_pthread_num; i++)
     {
-        cout << "创建线程："<<i<<"th pthread\n";
-        if( pthread_create(pth_arr+i,NULL,(void*)worker,this) != 0)
+        if( pthread_create(pth_arr+i,NULL,worker,(void *)this) != 0 )
         {
             delete []pth_arr;
-            throw std::exception();
+            cout <<"创建线程失败\n";
+            //throw std::exception();
+            return ;
         }
-        //脱离主线程，使得所有子线程由系统管理，释放资源
-        if( pthread_detach(pth_arr[i]));
+        else
         {
-            delete []pth_arr;
-            throw std::exception();
+            cout << "创建线程成功："<<i<<"th pthread\n";
         }
     }
 }
@@ -69,6 +70,9 @@ bool threadpool<T>::append_task( T * request )
 template<class T>
 void *threadpool<T>::worker(void * arg)
 {
+    //脱离主线程，使得所有子线程由系统管理，释放资源
+    pthread_detach(pthread_self());
+
     threadpool * pool = (threadpool*) arg;
     pool->run();
     return pool;

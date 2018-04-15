@@ -39,7 +39,7 @@ public:
     bool append_task(T * request);
 private:
     //C++中使用pthread_create()函数时处理函数需要为静态成员函数
-    static void * worker(void * arg);
+    static void *worker(void * arg);
     void run();
 };
 

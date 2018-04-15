@@ -21,7 +21,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include "comm.h"
+
 class process
 {
 public:
