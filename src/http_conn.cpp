@@ -19,7 +19,7 @@ const char * error_404_form = "The requested file was not found on this serrver.
 
 const char * error_500_title = "Internal Error";
 const char * error_500_form = "There was an unusual problem serbing the requested file.\n";
-const char *doc_root = "/var/www/html";
+const char *doc_root = "./var/www";
 int http_conn::m_user_count = 0;
 int http_conn::m_epollfd = -1;
 
@@ -51,6 +51,7 @@ void http_conn::init()
     m_check_idx = 0;
     m_read_idx = 0;
     m_write_idx = 0;
+    m_file_address = NULL;
     memset(m_read_buf,'\0',READ_BUFFER_SIZE);
     memset(m_write_buf,'\0',WRITE_BUFFER_SIZE);
     memset(m_read_buf,'\0',FILENAME_LEN);
@@ -69,6 +70,7 @@ void http_conn::close_conn(bool real_close )
 void http_conn::process()
 {
     //处理读的信息函数，我只需要根据返回值判断是否正确就可以
+    std::cout << "process"<<std::endl;
     HTTP_CODE read_ret = process_read();
     if( read_ret == NO_REQUEST )
     {
@@ -77,13 +79,13 @@ void http_conn::process()
         modfd(m_epollfd,m_sockfd,EPOLLIN);
         return ;
     }
+
     //分析请求行成功，就可以根据请求要求来回复数据
     bool write_ret = process_write(read_ret);
     if( !write_ret  )
     {
         close_conn();
     }
-
     modfd(m_epollfd,m_sockfd,EPOLLOUT);
 }
 
@@ -93,14 +95,14 @@ http_conn::HTTP_CODE http_conn::process_read()
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
     char * text = NULL;
-
+    std::cout << "process_read \n";
     //一行一行的解析http请求内容
     while( ((m_check_state == CHECK_STATE_CONTENT) && (line_status == LINE_OK ))||
            ((line_status = parse_line()) == LINE_OK) )
     {
         text = get_line();
         m_start_line = m_check_idx;
-        std::cout << "get 1 http line:" << text << std::endl;
+        std::cout << "------------------------------------get 1 http line:\n" << text << std::endl;
         switch( m_check_state )
         {
             case CHECK_STATE_REQUESTLINE:
@@ -149,12 +151,12 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
 {
     //获得url
     m_url = strpbrk(text," \t") ;//返回text中第一个在“ \t”中的字符位置
+    std::cout << "进入解析头部函数\n";
     if( !m_url )
     {
         return BAD_REQUEST;
     }
     *m_url++ = '\0';
-
     //判断为GET方法
     char *method  = text;
     if( strcasecmp(method,"GET") == 0 )
@@ -174,30 +176,34 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
     {
         return BAD_REQUEST;
     }
+    
 
     *m_version++ = '\0';
     m_version += strspn(m_version," \t");
-    if( strcasecmp(m_version,"HTTP/1.1") != 0  ||  strcasecmp(m_version,"HTTP/1.0") != 0)
+    if( strcasecmp(m_version,"HTTP/1.1") != 0 )
     {
         return BAD_REQUEST;
     }
 
-    if( strncasecmp(m_url,"http://",7) == 0 )
+    /*if( strncasecmp(m_url,"http://",7) == 0 )
     {
         //获得文件名称
         m_url += 7;
         m_url = strchr(m_url,'/');
         //查找第一次出现的位置
     }
-
     if( !m_url || m_url[0] != '/' )
     {
         return BAD_REQUEST;
     }
+    */
 
     m_check_state = CHECK_STATE_HEADER;
+    //std::cout << m_method <<std::endl;
+    std::cout << m_url <<std::endl;
+    std::cout << m_version <<std::endl;
+    std::cout << "进入解析头部函数完成\n";
     return NO_REQUEST;
-
 }
 
 http_conn::HTTP_CODE http_conn::parse_headers(char *text)
@@ -251,11 +257,15 @@ http_conn::HTTP_CODE http_conn::parse_content(char *text)
 //如果得到一个完整的正确的http请求时，就应该分析目标文件的属性，并且将文件映射到m_file_address处
 http_conn::HTTP_CODE http_conn::do_request()
 {
+    std::cout << "进入do_request\n";
     strcpy(m_real_file,doc_root) ;
+    std::cout << m_url<<std::endl;
     int len = strlen(doc_root);
     strncpy(m_real_file+len,m_url,FILENAME_LEN-len-1);
-    if( stat(m_real_file,&m_file_stat) < 0)
+    std::cout <<"文件所在目录：" <<m_real_file<<std::endl;
+    if( stat(m_real_file,&m_file_stat) != 0)
     {
+        std::cout <<"获取文件属性失败"<<std::endl;
         return NO_RESOURCE;
     }
     if( !( m_file_stat.st_mode & S_IROTH ) )
@@ -274,12 +284,14 @@ http_conn::HTTP_CODE http_conn::do_request()
     }
     m_file_address = (char *) mmap(0,m_file_stat.st_size,PROT_READ,MAP_PRIVATE,fd,0);
     close(fd);
+    std::cout << "完成do_request\n";
     return FILE_REQUEST;
 }
 
 http_conn::LINE_STATUS http_conn::parse_line()
 {
     char temp;
+    std::cout << "parse_line \n";
     for(; m_check_idx < m_read_idx; ++m_check_idx)
     {
         temp = m_read_buf[m_check_idx];
@@ -289,17 +301,18 @@ http_conn::LINE_STATUS http_conn::parse_line()
             {
                 return LINE_OPEN;
             }
-            else if( m_read_buf[m_read_idx+1] == '\n' )
+            else if( m_read_buf[m_check_idx+1] == '\n' )
             {
                 m_read_buf[m_check_idx++] = '\0';
                 m_read_buf[m_check_idx++] = '\0';
                 return LINE_OK;
             }
+            std::cout << "parse_line  完成\n";
             return LINE_BAD;
         }
         else if( temp == '\n' )
         {
-            if( m_check_idx > 1 && m_read_buf[m_read_idx-1] == '\r' )
+            if( m_check_idx > 1 && m_read_buf[m_check_idx-1] == '\r' )
             {
                 m_read_buf[m_check_idx-1] = '\0';
                 m_read_buf[m_check_idx++] = '\0';
@@ -337,12 +350,13 @@ bool http_conn::process_write(HTTP_CODE ret)
         }
         case NO_RESOURCE:
         {
+            std::cout <<"没有该资源\n";
             add_status_line(404,error_404_title);
             add_headers(strlen(error_404_form));
             if( !add_content(error_404_form) )
             {
                 return false;
-            }
+            } 
             break;
         }
         case FORBIDDEN_REQUEST:
@@ -357,7 +371,7 @@ bool http_conn::process_write(HTTP_CODE ret)
         }
         case FILE_REQUEST:
         {
-            add_status_line(403,error_403_title);
+            add_status_line(200,ok_200_title);
             if( m_file_stat.st_size !=0 )
             {
                 add_headers(m_file_stat.st_size);
@@ -382,6 +396,14 @@ bool http_conn::process_write(HTTP_CODE ret)
         default:
             return false;
     }
+    //当没有文件的时候 也需要加上映射位置，我就说为什么找不大文件的时候就一直使得epoll不工作，由于此处没有
+    //添加导致write()函数不能进行写数据,从而epoll不能进行连接下一个连接
+    m_iv[0].iov_base = m_write_buf;
+    m_iv[0].iov_len = m_write_idx;
+    m_iv[1].iov_base = m_file_address;
+    m_iv[1].iov_len = 0;
+    m_iv_count = 2;
+    return true;
 }
 
 bool http_conn::read()
@@ -399,6 +421,7 @@ bool http_conn::read()
         {
             if( errno == EAGAIN || errno == EWOULDBLOCK )
             {
+                std::cout<<m_read_buf <<std::endl;
                 break;
             }
             return false;
@@ -425,9 +448,13 @@ bool http_conn::write()
         return true;
     }
 
+    std::cout << "即将写入数据\n"<<std::endl;
     while( 1 )
     {
+
         temp = writev(m_sockfd,m_iv,m_iv_count);
+        sleep(1);
+        std::cout << "开始第一次写入数据\n"<<std::endl;
         if( temp <= -1 )
         {
             if( errno == EAGAIN )
@@ -435,10 +462,10 @@ bool http_conn::write()
                 modfd(m_epollfd,m_sockfd,EPOLLOUT);
                 return true;
             }
+            std::cout << "第一次写入数据失败\n"<<std::endl;
             unmap();
             return false;
         }
-
         bytes_to_send -=temp;
         bytes_have_send += temp;
         if( bytes_to_send <= bytes_have_send )
@@ -448,6 +475,7 @@ bool http_conn::write()
             {
                 init();
                 modfd(m_epollfd,m_sockfd,EPOLLIN);
+                std::cout << "写入数据完成！\n"<<std::endl;
                 return true;
             }
             else
@@ -470,6 +498,7 @@ void http_conn::unmap()
 }
 bool http_conn::add_respond(const char *format,...)
 {
+    std::cout<< "m_write_idx is ：" << m_write_idx<<std::endl;
     if( m_write_idx >= WRITE_BUFFER_SIZE )    
     {
         return false;
@@ -481,6 +510,7 @@ bool http_conn::add_respond(const char *format,...)
     {
         return false;
     }
+    std::cout << m_write_buf+m_write_idx<<std::endl;
     m_write_idx+=len;
     va_end(arg_list);
     return true;

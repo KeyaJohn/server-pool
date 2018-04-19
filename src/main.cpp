@@ -63,6 +63,7 @@ int main()
 
     while( true )
     {
+        std::cout <<"wait epoll.......\n";
         int number = epoll_wait(epollfd,events,MAX_EVENT_NUMBER,-1);
         if( number < 0  && errno != EAGAIN )
         {
@@ -99,6 +100,7 @@ int main()
                 if( user[fd].read())
                 {
                     pool->append_task(user+fd);
+                    std::cout << "append task succrssfully\n"<<std::endl;
                 }
                 else 
                 {
@@ -107,6 +109,7 @@ int main()
             }
             else if( events[i].events & EPOLLOUT  )
             {
+                std::cout<<"开始写入数据"<<std::endl;
                 if( !user[fd].write() )
                 {
                     user[fd].close_conn();

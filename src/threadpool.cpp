@@ -102,6 +102,8 @@ void threadpool<T>::run()
             continue;
         }
         //进行处理
-        //request->process();
+        std::cout << pthread_self()<<"---------------------\n" <<std::endl;
+        request->process();
     }
+    cout << pthread_self()<<"线程 退出\n";
 }
